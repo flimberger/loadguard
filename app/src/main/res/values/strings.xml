@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">LoadGuard</string>
+    <string name="notification_channel_name">Charge Monitor Service</string>
+    <string name="notification_channel_description">Active while the device is charging</string>
+    <string name="notification_title">LoadGuard</string>
+    <string name="notification_text">Device is charging</string>
+    <string name="status_text_initial">Waiting for update</string>
+</resources>
