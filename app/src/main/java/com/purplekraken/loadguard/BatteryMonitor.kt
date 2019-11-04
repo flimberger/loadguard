@@ -7,6 +7,8 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import android.util.Log
 
+typealias BatteryUpdateCallback = (BatteryMonitor) -> Unit
+
 class BatteryMonitor(private val ctx: Context) {
     companion object {
         private const val TAG = "BatteryMonitor"
@@ -23,7 +25,7 @@ class BatteryMonitor(private val ctx: Context) {
                 val status: Int = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
                 isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING
                         || status == BatteryManager.BATTERY_STATUS_FULL
-                listeners.forEach { listener -> listener.onUpdate(this@BatteryMonitor) }
+                listeners.forEach { listener -> listener(this@BatteryMonitor) }
             }
         }
     }
@@ -31,9 +33,9 @@ class BatteryMonitor(private val ctx: Context) {
     var chargingLevel = -1
     var isCharging = false
 
-    private val listeners: MutableSet<UpdateListener> = LinkedHashSet()
+    private val listeners: MutableSet<BatteryUpdateCallback> = LinkedHashSet()
 
-    fun addListener(l: UpdateListener) {
+    fun addListener(l: BatteryUpdateCallback) {
         val wasEmpty = listeners.isEmpty()
         listeners.add(l)
         if (wasEmpty) {
@@ -41,7 +43,7 @@ class BatteryMonitor(private val ctx: Context) {
         }
     }
 
-    fun removeListener(l: UpdateListener) {
+    fun removeListener(l: BatteryUpdateCallback) {
         listeners.remove(l)
         if (listeners.isEmpty()) {
             pause()
@@ -54,9 +56,5 @@ class BatteryMonitor(private val ctx: Context) {
 
     private fun pause() {
         ctx.unregisterReceiver(receiver)
-    }
-
-    interface UpdateListener {
-        fun onUpdate(batteryMonitor: BatteryMonitor)
     }
 }

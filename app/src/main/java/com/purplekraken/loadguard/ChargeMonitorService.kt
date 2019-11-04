@@ -22,20 +22,20 @@ class ChargeMonitorService : Service() {
         super.onCreate()
         Log.d(TAG, "service created")
         createNotificationChannel()
-        (application as LoadGuardApp).batteryMonitor.addListener(object: BatteryMonitor.UpdateListener {
-            override fun onUpdate(batteryMonitor: BatteryMonitor) {
-                if (!batteryMonitor.isCharging) {
-                    stopSelf()
-                }
-            }
-        })
     }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
+    private val batteryListener: BatteryUpdateCallback = {
+        if (!it.isCharging) {
+            doStopSelf()
+        }
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        (application as LoadGuardApp).batteryMonitor.addListener(batteryListener)
         startForeground(SVC_NOTIFICATION_ID, createNotification())
         Log.d(TAG, "service started")
         return super.onStartCommand(intent, flags, startId)
@@ -62,5 +62,12 @@ class ChargeMonitorService : Service() {
             .setSmallIcon(R.drawable.ic_shield_half_full_black_48dp)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
+    }
+
+    // Call this instead of `stopSelf()` to clean up properly
+    // TODO: what about external `stopService()` calls?
+    private fun doStopSelf() {
+        (application as LoadGuardApp).batteryMonitor.removeListener(batteryListener)
+        stopSelf()
     }
 }

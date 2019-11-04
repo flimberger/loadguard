@@ -9,15 +9,16 @@ class StartMonitorServiceJob : JobService() {
         private const val TAG = "StartMonitorServiceJob"
     }
 
-    override fun onStopJob(params: JobParameters?): Boolean {
+    override fun onStartJob(params: JobParameters?): Boolean {
         Log.d(TAG, "Job starting")
-        (applicationContext as LoadGuardApp).stopMonitorService()
-        return true
+        (applicationContext as LoadGuardApp).startMonitorService()
+        jobFinished(params, true)
+        return false
     }
 
-    override fun onStartJob(params: JobParameters?): Boolean {
+    override fun onStopJob(params: JobParameters?): Boolean {
         Log.d(TAG, "Job stopping")
-        (applicationContext as LoadGuardApp).startMonitorService()
+        (applicationContext as LoadGuardApp).stopMonitorService()
         return true
     }
 }

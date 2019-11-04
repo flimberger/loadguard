@@ -14,14 +14,13 @@ class MainActivity : AppCompatActivity() {
         statusText = findViewById(R.id.status_text)
     }
 
-    private val batteryUpdateListener = object : BatteryMonitor.UpdateListener {
-        override fun onUpdate(batteryMonitor: BatteryMonitor) {
-            statusText?.apply {
-                text = if (batteryMonitor.chargingLevel == -1) {
-                    getString(R.string.status_text_initial)
-                } else {
-                    "${batteryMonitor.chargingLevel} % (${if (batteryMonitor.isCharging) "charging" else "not charging"})"
-                }
+    private val batteryUpdateListener: BatteryUpdateCallback = {
+        val batteryMonitor = it
+        statusText?.apply {
+            text = if (it.chargingLevel == -1) {
+                getString(R.string.status_text_initial)
+            } else {
+                "${batteryMonitor.chargingLevel} % (${if (batteryMonitor.isCharging) "charging" else "not charging"})"
             }
         }
     }
