@@ -8,6 +8,10 @@ import android.os.BatteryManager
 import android.util.Log
 
 class BatteryMonitor(private val ctx: Context) {
+    companion object {
+        private const val TAG = "BatteryMonitor"
+    }
+
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent != null) {
@@ -22,10 +26,6 @@ class BatteryMonitor(private val ctx: Context) {
                 listeners.forEach { listener -> listener.onUpdate(this@BatteryMonitor) }
             }
         }
-    }
-
-    companion object {
-        const val TAG = "BatteryMonitor"
     }
 
     var chargingLevel = -1

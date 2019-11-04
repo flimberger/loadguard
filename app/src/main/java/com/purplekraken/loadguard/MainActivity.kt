@@ -9,6 +9,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        (applicationContext as LoadGuardApp).scheduleJob()
         setContentView(R.layout.activity_main)
         statusText = findViewById(R.id.status_text)
     }
@@ -16,11 +17,10 @@ class MainActivity : AppCompatActivity() {
     private val batteryUpdateListener = object : BatteryMonitor.UpdateListener {
         override fun onUpdate(batteryMonitor: BatteryMonitor) {
             statusText?.apply {
-                if (batteryMonitor.chargingLevel == -1) {
-                    text = getString(R.string.status_text_initial)
+                text = if (batteryMonitor.chargingLevel == -1) {
+                    getString(R.string.status_text_initial)
                 } else {
-                    text =
-                        "${batteryMonitor.chargingLevel} % (${if (batteryMonitor.isCharging) "charging" else "not charging"})"
+                    "${batteryMonitor.chargingLevel} % (${if (batteryMonitor.isCharging) "charging" else "not charging"})"
                 }
             }
         }
