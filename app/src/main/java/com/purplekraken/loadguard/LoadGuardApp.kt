@@ -8,16 +8,21 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import com.purplekraken.loadguard.alarm.AlarmManager
 
 class LoadGuardApp : Application() {
     companion object {
         private const val TAG = "LoadGuardApp"
         private const val JOB_ID = 100
+
+        const val levelThreshold = 80
     }
 
+    val alarmManager = AlarmManager(this)
     val batteryMonitor = BatteryMonitor(this)
 
     private var jobScheduled = false
+
     fun scheduleJob() {
         if (!jobScheduled) {
             Log.d(TAG, "scheduling job")
