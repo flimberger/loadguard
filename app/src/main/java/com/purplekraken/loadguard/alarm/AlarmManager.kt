@@ -30,20 +30,30 @@ class AlarmManager(private val ctx: Context) {
         private val VIBRATE_PATTERN = longArrayOf(500, 500)
     }
 
+    private var isTriggered: Boolean = false
+
     fun triggerAlarm() {
-        Log.d(TAG, "alarm triggered")
+        if (isTriggered) {
+            Log.w(TAG, "BUG(state): alarm is already triggered")
+            return
+        }
         // TODO: acquire a CPU wakeLock if necessary
+        isTriggered = true
         RingtonePlayer.play(ctx)
         VibratorCompat.vibrate(
             getVibrator(),
             VibrationEffectCompat.createWaveForm(VIBRATE_PATTERN, 0)
         )
+        Log.d(TAG, "alarm triggered")
     }
 
     fun dismiss() {
-        Log.d(TAG, "alarm dismissed")
-        RingtonePlayer.stop(ctx)
-        getVibrator().cancel()
+        if (isTriggered) {
+            RingtonePlayer.stop(ctx)
+            getVibrator().cancel()
+            isTriggered = false
+            Log.d(TAG, "alarm dismissed")
+        }
     }
 
     private fun getVibrator(): Vibrator {

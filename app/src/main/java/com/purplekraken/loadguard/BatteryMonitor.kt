@@ -35,21 +35,34 @@ class BatteryMonitor(private val ctx: Context) {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent != null) {
-                val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-                val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-                chargingLevel = (level / scale.toFloat() * 100).toInt()
-                Log.i(TAG, "current level: $chargingLevel %")
+                when (intent.action) {
+                    Intent.ACTION_POWER_CONNECTED -> {
+                        isPowerConnected = true
+                        listeners.forEach { listener -> listener(this@BatteryMonitor) }
+                    }
+                    Intent.ACTION_POWER_DISCONNECTED -> {
+                        isPowerConnected = false
+                        listeners.forEach { listener -> listener(this@BatteryMonitor) }
+                    }
+                    Intent.ACTION_BATTERY_CHANGED -> {
+                        val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+                        val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+                        chargingLevel = (level / scale.toFloat() * 100).toInt()
+                        Log.i(TAG, "current level: $chargingLevel %")
 
-                val status: Int = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
-                isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING
-                        || status == BatteryManager.BATTERY_STATUS_FULL
-                listeners.forEach { listener -> listener(this@BatteryMonitor) }
+                        val status: Int = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+                        isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING
+                                || status == BatteryManager.BATTERY_STATUS_FULL
+                        listeners.forEach { listener -> listener(this@BatteryMonitor) }
+                    }
+                }
             }
         }
     }
 
     var chargingLevel = -1
     var isCharging = false
+    var isPowerConnected = false
 
     private val listeners: MutableSet<BatteryUpdateCallback> = LinkedHashSet()
 

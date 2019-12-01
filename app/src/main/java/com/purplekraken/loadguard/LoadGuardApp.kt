@@ -31,32 +31,12 @@ import com.purplekraken.loadguard.alarm.AlarmManager
 class LoadGuardApp : Application() {
     companion object {
         private const val TAG = "LoadGuardApp"
-        private const val JOB_ID = 100
 
         const val levelThreshold = 80
     }
 
     val alarmManager = AlarmManager(this)
     val batteryMonitor = BatteryMonitor(this)
-
-    private var jobScheduled = false
-
-    fun scheduleJob() {
-        if (!jobScheduled) {
-            Log.d(TAG, "scheduling job")
-            val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-            val jobInfo =
-                JobInfo.Builder(JOB_ID, ComponentName(this, StartMonitorServiceJob::class.java))
-                    .setRequiresCharging(true)
-                    .setOverrideDeadline(0L)
-                    .build()
-            if (jobScheduler.schedule(jobInfo) == JobScheduler.RESULT_SUCCESS) {
-                jobScheduled = true
-            } else {
-                Log.e(TAG, "failed to schedule job")
-            }
-        }
-    }
 
     fun startMonitorService() {
         Log.d(TAG, "starting monitor service")
@@ -65,10 +45,5 @@ class LoadGuardApp : Application() {
         } else {
             startService(Intent(this, ChargeMonitorService::class.java))
         }
-    }
-
-    fun stopMonitorService() {
-        Log.d(TAG, "stopping monitor service")
-        stopService(Intent(this, ChargeMonitorService::class.java))
     }
 }

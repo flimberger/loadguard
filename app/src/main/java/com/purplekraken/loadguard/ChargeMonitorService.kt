@@ -58,27 +58,17 @@ class ChargeMonitorService : Service() {
 
     private var alarmTriggered = false
     private val batteryListener: BatteryUpdateCallback = {
-        if (!it.isCharging) {
-            doStopSelf()
+        val lvl = it.chargingLevel
+        val isPowerConnected = it.isPowerConnected
+        if (!isPowerConnected && lvl >= LoadGuardApp.levelThreshold && !alarmTriggered) {
+            notificationController.showAlarmNotification(lvl)
+            (application as LoadGuardApp).alarmManager.triggerAlarm()
+            alarmTriggered = true
         } else {
-            val lvl = it.chargingLevel
-            if (!alarmTriggered && lvl >= LoadGuardApp.levelThreshold) {
-                notificationController.showAlarmNotification(lvl)
-                (application as LoadGuardApp).alarmManager.triggerAlarm()
-                alarmTriggered = true
-            } else {
-                notificationController.updateNotification("$lvl %")
+            if (alarmTriggered && !isPowerConnected) {
+                (application as LoadGuardApp).alarmManager.dismiss()
             }
+            notificationController.updateNotification("$lvl %")
         }
-    }
-
-    // Call this instead of `stopSelf()` to clean up properly
-    // TODO: what about external `stopService()` calls?
-    private fun doStopSelf() {
-        val app = (application as LoadGuardApp)
-        stopForeground(false)
-        app.alarmManager.dismiss()
-        app.batteryMonitor.removeListener(batteryListener)
-        stopSelf()
     }
 }

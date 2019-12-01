@@ -52,7 +52,6 @@ private fun handleIntent(ctx: Context?, intent: Intent?) {
         NotificationController.ACTION_DISMISS -> {
             val app = ctx.applicationContext as LoadGuardApp
             app.alarmManager.dismiss()
-            app.stopMonitorService()
         }
     }
 }
