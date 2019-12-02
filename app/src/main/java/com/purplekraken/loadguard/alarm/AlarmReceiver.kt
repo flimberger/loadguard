@@ -24,7 +24,6 @@ import android.content.Intent
 import android.util.Log
 import com.purplekraken.loadguard.AsyncHandler
 import com.purplekraken.loadguard.LoadGuardApp
-import com.purplekraken.loadguard.NotificationController
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context?, intent: Intent?) {
@@ -49,9 +48,9 @@ private fun handleIntent(ctx: Context?, intent: Intent?) {
     }
 
     when (intent.action) {
-        NotificationController.ACTION_DISMISS -> {
+        AlarmNotificationController.ACTION_DISMISS -> {
             val app = ctx.applicationContext as LoadGuardApp
-            app.alarmManager.dismiss()
+            app.alarmController.dismiss()
         }
     }
 }

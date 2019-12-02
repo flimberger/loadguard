@@ -21,13 +21,29 @@ package com.purplekraken.loadguard.alarm
 import android.content.Context
 import android.os.Vibrator
 import android.util.Log
+import com.purplekraken.loadguard.LoadGuardApp
 import com.purplekraken.loadguard.compat.VibrationEffectCompat
 import com.purplekraken.loadguard.compat.VibratorCompat
 
-class AlarmManager(private val ctx: Context) {
+class AlarmController(private val ctx: Context) {
     companion object {
-        private const val TAG = "AlarmManager"
+        private const val TAG = "AlarmController"
         private val VIBRATE_PATTERN = longArrayOf(500, 500)
+
+        private const val ALARM_CHANNEL_ID = "com.purplekraken.loadguard.ALARM_CHANNEL_ID"
+        private const val ALARM_NOTIFICATION_ID = 1002
+    }
+
+    private val notificationController: AlarmNotificationController
+
+    init {
+        notificationController = AlarmNotificationController(
+            ctx,
+            ALARM_CHANNEL_ID,
+            "Charging threshold alarm",
+            "Alarm triggered when the charging threshold is reached",
+            ALARM_NOTIFICATION_ID
+        )
     }
 
     private var isTriggered: Boolean = false
@@ -39,6 +55,8 @@ class AlarmManager(private val ctx: Context) {
         }
         // TODO: acquire a CPU wakeLock if necessary
         isTriggered = true
+        val batmon = (ctx.applicationContext as LoadGuardApp).batteryMonitor
+        notificationController.showAlarmNotification(batmon.chargingLevel)
         RingtonePlayer.play(ctx)
         VibratorCompat.vibrate(
             getVibrator(),
@@ -51,6 +69,7 @@ class AlarmManager(private val ctx: Context) {
         if (isTriggered) {
             RingtonePlayer.stop(ctx)
             getVibrator().cancel()
+            notificationController.hideNotification()
             isTriggered = false
             Log.d(TAG, "alarm dismissed")
         }

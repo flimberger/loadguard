@@ -31,14 +31,15 @@ class ChargeMonitorService : Service() {
         private const val SVC_NOTIFICATION_ID = 1001
     }
 
-    private lateinit var notificationController: NotificationController
+    private lateinit var notificationController: ServiceNotificationController
 
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "service created")
         val cname = getString(R.string.notification_channel_name)
         val cdesc = getString(R.string.notification_channel_description)
-        notificationController = NotificationController(this, SVC_CHANNEL_ID, SVC_NOTIFICATION_ID, cname, cdesc)
+        notificationController =
+            ServiceNotificationController(this, SVC_CHANNEL_ID, cname, cdesc, SVC_NOTIFICATION_ID)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -61,12 +62,11 @@ class ChargeMonitorService : Service() {
         val lvl = it.chargingLevel
         val isPowerConnected = it.isPowerConnected
         if (!isPowerConnected && lvl >= LoadGuardApp.levelThreshold && !alarmTriggered) {
-            notificationController.showAlarmNotification(lvl)
-            (application as LoadGuardApp).alarmManager.triggerAlarm()
+            (application as LoadGuardApp).alarmController.triggerAlarm()
             alarmTriggered = true
         } else {
             if (alarmTriggered && !isPowerConnected) {
-                (application as LoadGuardApp).alarmManager.dismiss()
+                (application as LoadGuardApp).alarmController.dismiss()
             }
             notificationController.updateNotification("$lvl %")
         }
