@@ -19,18 +19,9 @@
 package com.purplekraken.loadguard
 
 import android.app.Application
-import android.content.Intent
-import android.os.Build
-import android.util.Log
 import com.purplekraken.loadguard.alarm.AlarmController
 
 class LoadGuardApp : Application() {
-    companion object {
-        private const val TAG = "LoadGuardApp"
-
-        const val levelThreshold = 80
-    }
-
     lateinit var alarmController: AlarmController
     lateinit var batteryMonitor: BatteryMonitor
 
@@ -38,14 +29,5 @@ class LoadGuardApp : Application() {
         super.onCreate()
         alarmController = AlarmController(this)
         batteryMonitor = BatteryMonitor(this)
-    }
-
-    fun startMonitorService() {
-        Log.d(TAG, "starting monitor service")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(Intent(this, ChargeMonitorService::class.java))
-        } else {
-            startService(Intent(this, ChargeMonitorService::class.java))
-        }
     }
 }

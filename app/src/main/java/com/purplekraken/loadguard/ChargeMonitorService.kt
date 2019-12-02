@@ -61,7 +61,7 @@ class ChargeMonitorService : Service() {
     private val batteryListener: BatteryUpdateCallback = {
         val lvl = it.chargingLevel
         val isPowerConnected = it.isPowerConnected
-        if (!isPowerConnected && lvl >= LoadGuardApp.levelThreshold && !alarmTriggered) {
+        if (!isPowerConnected && lvl >= Settings.levelThreshold && !alarmTriggered) {
             (application as LoadGuardApp).alarmController.triggerAlarm()
             alarmTriggered = true
         } else {

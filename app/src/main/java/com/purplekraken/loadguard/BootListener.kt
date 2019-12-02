@@ -21,6 +21,7 @@ package com.purplekraken.loadguard
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.purplekraken.loadguard.compat.ContextCompat
 
 class BootListener : BroadcastReceiver() {
     override fun onReceive(ctx: Context?, intent: Intent?) {
@@ -34,6 +35,7 @@ class BootListener : BroadcastReceiver() {
     }
 
     private fun startMonitorService(ctx: Context) {
-        (ctx.applicationContext as LoadGuardApp).startMonitorService()
+        val i = Intent(ctx, ChargeMonitorService::class.java)
+        ContextCompat(ctx).startForegroundService(i)
     }
 }

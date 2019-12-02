@@ -27,7 +27,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (applicationContext as LoadGuardApp).startMonitorService()
         setContentView(R.layout.activity_main)
         statusText = findViewById(R.id.status_text)
     }
