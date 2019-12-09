@@ -48,27 +48,31 @@ class ChargeMonitorService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val app = application as LoadGuardApp
-        val batmon = app.batteryMonitor
-        batmon.addListener(batteryListener)
-        val lvl = batmon.chargingLevel
+        val batteryMonitor = app.batteryMonitor
+        batteryMonitor.addListener(batteryListener)
+        val lvl = batteryMonitor.chargingLevel
         val notification = notificationController.createNotification("$lvl %")
         startForeground(SVC_NOTIFICATION_ID, notification)
         Log.d(TAG, "service started")
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private var alarmTriggered = false
     private val batteryListener: BatteryUpdateCallback = {
         val lvl = it.chargingLevel
         val isPowerConnected = it.isPowerConnected
-        if (!isPowerConnected && lvl >= Settings.levelThreshold && !alarmTriggered) {
-            (application as LoadGuardApp).alarmController.triggerAlarm()
-            alarmTriggered = true
-        } else {
-            if (alarmTriggered && !isPowerConnected) {
-                (application as LoadGuardApp).alarmController.dismiss()
-            }
-            notificationController.updateNotification("$lvl %")
+        val app = application as LoadGuardApp
+        val alarmController = app.alarmController
+        if (isPowerConnected && lvl >= Settings.levelThreshold && !alarmController.isTriggered) {
+            alarmController.triggerAlarm()
+        } else if (alarmController.isTriggered && !isPowerConnected) {
+            alarmController.dismiss()
+        } else if (lvl < Settings.levelThreshold && alarmController.isTriggered) {
+            alarmController.reset()
         }
+        var text = "$lvl %"
+        if (isPowerConnected) {
+            text += " (charging)"
+        }
+        notificationController.updateNotification(text)
     }
 }

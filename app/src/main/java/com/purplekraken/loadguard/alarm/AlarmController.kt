@@ -25,6 +25,15 @@ import com.purplekraken.loadguard.LoadGuardApp
 import com.purplekraken.loadguard.compat.VibrationEffectCompat
 import com.purplekraken.loadguard.compat.VibratorCompat
 
+/**
+ * Controller for the alarm state
+ *
+ * Simple state machine:
+ * <pre>
+ * Reset -> Triggered -> Muted
+ *   ^---------------------+
+ * </pre>
+ */
 class AlarmController(private val ctx: Context) {
     companion object {
         private const val TAG = "AlarmController"
@@ -46,7 +55,9 @@ class AlarmController(private val ctx: Context) {
         )
     }
 
-    private var isTriggered: Boolean = false
+    var isTriggered = false
+        private set
+    private var isMuted = false
 
     fun triggerAlarm() {
         if (isTriggered) {
@@ -65,14 +76,38 @@ class AlarmController(private val ctx: Context) {
         Log.d(TAG, "alarm triggered")
     }
 
+    /**
+     * Silence the alarm
+     *
+     * This function <emph>does not</emph> clear the triggered state, as the next battery change
+     * would trigger the alarm instead. To return into the initial state, use {@link #reset()}
+     * instead.
+     */
     fun dismiss() {
-        if (isTriggered) {
-            RingtonePlayer.stop(ctx)
-            getVibrator().cancel()
-            notificationController.hideNotification()
-            isTriggered = false
-            Log.d(TAG, "alarm dismissed")
+        if (!isTriggered) {
+            Log.d(TAG, "BUG(state): can't mute a not yet triggered alarm")
+            return
         }
+        if (isMuted) {
+            Log.d(TAG, "BUG(state): alarm is already muted")
+            return
+        }
+
+        RingtonePlayer.stop(ctx)
+        getVibrator().cancel()
+        notificationController.hideNotification()
+        isMuted = true
+        Log.d(TAG, "alarm dismissed")
+    }
+
+    /**
+     * Reset the internal state
+     *
+     * The internal state is reset to be neither triggered nor muted.
+     */
+    fun reset() {
+        isTriggered = false
+        isMuted = false
     }
 
     private fun getVibrator(): Vibrator {
