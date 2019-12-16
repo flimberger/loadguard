@@ -82,7 +82,13 @@ class BatteryMonitor(private val ctx: Context) {
     }
 
     private fun resume() {
-        ctx.registerReceiver(receiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val intentFilter = IntentFilter()
+        intentFilter.apply {
+            addAction(Intent.ACTION_BATTERY_CHANGED)
+            addAction(Intent.ACTION_POWER_CONNECTED)
+            addAction(Intent.ACTION_POWER_DISCONNECTED)
+        }
+        ctx.registerReceiver(receiver, intentFilter)
     }
 
     private fun pause() {
