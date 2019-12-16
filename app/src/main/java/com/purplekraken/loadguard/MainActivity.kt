@@ -18,9 +18,11 @@
 
 package com.purplekraken.loadguard
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.purplekraken.loadguard.compat.ContextCompat
 
 class MainActivity : AppCompatActivity() {
     private var statusText: TextView? = null
@@ -29,6 +31,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         statusText = findViewById(R.id.status_text)
+
+        // If the app was freshly installed, the service is not running and a reboot is too much to
+        // ask for, therefore just start the service when the activity was launched
+        startBatteryMonitor()
+    }
+
+    private fun startBatteryMonitor() {
+        val i = Intent(applicationContext, ChargeMonitorService::class.java)
+        ContextCompat(applicationContext).startForegroundService(i)
     }
 
     private val batteryUpdateListener: BatteryUpdateCallback = {

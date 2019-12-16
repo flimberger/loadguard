@@ -62,8 +62,12 @@ class AlarmController(private val ctx: Context) {
     fun triggerAlarm() {
         if (isTriggered) {
             Log.w(TAG, "BUG(state): alarm is already triggered")
-            return
+        } else {
+            startAlarm()
         }
+    }
+
+    private fun startAlarm() {
         // TODO: acquire a CPU wakeLock if necessary
         isTriggered = true
         val batmon = (ctx.applicationContext as LoadGuardApp).batteryMonitor
@@ -86,13 +90,14 @@ class AlarmController(private val ctx: Context) {
     fun dismiss() {
         if (!isTriggered) {
             Log.d(TAG, "BUG(state): can't mute a not yet triggered alarm")
-            return
-        }
-        if (isMuted) {
+        } else if (isMuted) {
             Log.d(TAG, "BUG(state): alarm is already muted")
-            return
+        } else {
+            stopAlarm()
         }
+    }
 
+    private fun stopAlarm() {
         RingtonePlayer.stop(ctx)
         getVibrator().cancel()
         notificationController.hideNotification()

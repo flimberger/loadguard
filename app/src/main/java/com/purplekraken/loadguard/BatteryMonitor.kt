@@ -38,21 +38,25 @@ class BatteryMonitor(private val ctx: Context) {
                 when (intent.action) {
                     Intent.ACTION_POWER_CONNECTED -> {
                         isPowerConnected = true
+                        Log.i(TAG, "power connected")
                         listeners.forEach { listener -> listener(this@BatteryMonitor) }
                     }
                     Intent.ACTION_POWER_DISCONNECTED -> {
                         isPowerConnected = false
+                        Log.i(TAG, "power disconnected")
                         listeners.forEach { listener -> listener(this@BatteryMonitor) }
                     }
                     Intent.ACTION_BATTERY_CHANGED -> {
                         val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
                         val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
                         chargingLevel = (level / scale.toFloat() * 100).toInt()
-                        Log.i(TAG, "current level: $chargingLevel %")
 
                         val status: Int = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
                         isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING
                                 || status == BatteryManager.BATTERY_STATUS_FULL
+
+                        Log.i(TAG, "current level: $chargingLevel %")
+
                         listeners.forEach { listener -> listener(this@BatteryMonitor) }
                     }
                 }
@@ -61,8 +65,11 @@ class BatteryMonitor(private val ctx: Context) {
     }
 
     var chargingLevel = -1
+        private set
     var isCharging = false
+        private set
     var isPowerConnected = false
+        private set
 
     private val listeners: MutableSet<BatteryUpdateCallback> = LinkedHashSet()
 
