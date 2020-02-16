@@ -22,6 +22,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import com.purplekraken.loadguard.alarm.AlarmController
 
 class ChargeMonitorService : Service() {
     companion object {
@@ -68,11 +69,11 @@ class ChargeMonitorService : Service() {
         val isPowerConnected = it.isPowerConnected
         val app = application as LoadGuardApp
         val alarmController = app.alarmController
-        if (isPowerConnected && lvl >= Settings.levelThreshold && !alarmController.isTriggered) {
+        if (isPowerConnected && lvl >= Settings.levelThreshold && alarmController.state == AlarmController.AlarmState.ARMED) {
             alarmController.triggerAlarm()
-        } else if (alarmController.isTriggered && !isPowerConnected) {
+        } else if (alarmController.state == AlarmController.AlarmState.TRIGGERED && !isPowerConnected) {
             alarmController.dismiss()
-        } else if (lvl < Settings.levelThreshold && alarmController.isTriggered) {
+        } else if (lvl < Settings.levelThreshold && alarmController.state != AlarmController.AlarmState.ARMED) {
             alarmController.reset()
         }
         val text = createNotificationText(it)

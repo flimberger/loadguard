@@ -30,7 +30,7 @@ import com.purplekraken.loadguard.compat.VibratorCompat
  *
  * Simple state machine:
  * <pre>
- * Reset -> Triggered -> Muted
+ * Armed -> Triggered -> Dismissed
  *   ^---------------------+
  * </pre>
  */
@@ -55,21 +55,19 @@ class AlarmController(private val ctx: Context) {
         )
     }
 
-    var isTriggered = false
-        private set
-    private var isMuted = false
+    var state = AlarmState.ARMED
 
     fun triggerAlarm() {
-        if (isTriggered) {
-            Log.w(TAG, "BUG(state): alarm is already triggered")
-        } else {
-            startAlarm()
+        when (state) {
+            AlarmState.ARMED -> startAlarm()
+            AlarmState.TRIGGERED -> Log.w(TAG, "BUG(state): alarm is already triggered")
+            AlarmState.DISMISSED -> Log.w(TAG, "BUG(state): alarm is already dismissed")
         }
     }
 
     private fun startAlarm() {
         // TODO: acquire a CPU wakeLock if necessary
-        isTriggered = true
+        state = AlarmState.TRIGGERED
         val batmon = (ctx.applicationContext as LoadGuardApp).batteryMonitor
         notificationController.showAlarmNotification(batmon.chargingLevel)
         RingtonePlayer.play(ctx)
@@ -88,12 +86,10 @@ class AlarmController(private val ctx: Context) {
      * instead.
      */
     fun dismiss() {
-        if (!isTriggered) {
-            Log.d(TAG, "BUG(state): can't mute a not yet triggered alarm")
-        } else if (isMuted) {
-            Log.d(TAG, "BUG(state): alarm is already muted")
-        } else {
-            stopAlarm()
+        when (state) {
+            AlarmState.ARMED -> Log.d(TAG, "BUG(state): can't mute a not yet triggered alarm")
+            AlarmState.TRIGGERED -> stopAlarm()
+            AlarmState.DISMISSED -> Log.d(TAG, "BUG(state): alarm is already dismissed")
         }
     }
 
@@ -101,7 +97,7 @@ class AlarmController(private val ctx: Context) {
         RingtonePlayer.stop(ctx)
         getVibrator().cancel()
         notificationController.hideNotification()
-        isMuted = true
+        state = AlarmState.DISMISSED
         Log.d(TAG, "alarm dismissed")
     }
 
@@ -111,12 +107,16 @@ class AlarmController(private val ctx: Context) {
      * The internal state is reset to be neither triggered nor muted.
      */
     fun reset() {
-        isTriggered = false
-        isMuted = false
+        state = AlarmState.ARMED
     }
 
     private fun getVibrator(): Vibrator {
         return ctx.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
     }
 
+    enum class AlarmState {
+        ARMED,
+        TRIGGERED,
+        DISMISSED
+    }
 }
